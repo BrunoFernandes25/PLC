@@ -1,0 +1,37 @@
+body{
+    background-color: rgb(140, 173, 173);
+    text-align: center;
+}
+
+.mainBar,a{
+    font: bold;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 1.3rem;
+    color: aliceblue;
+    padding-right: 50px;
+}
+.mainBar, a:link{
+    text-decoration: none;
+}
+.mainBar, a:visited{
+    text-decoration: none;
+}
+table{
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 1.3rem;
+    color: aliceblue;
+}
+
+.title {
+    font: bold;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 1.5rem;
+    color: aliceblue;
+}
+
+body, .p{
+    font:lighter;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 1rem;
+    color: aliceblue;
+}

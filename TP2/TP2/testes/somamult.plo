@@ -1,0 +1,9 @@
+var n com 3
+var m com 4
+var c com 2
+
+
+saidas "Res1: "
+var exp com n + m * c
+
+saidas exp

@@ -1,0 +1,2053 @@
+
+\documentclass[11pt,a4paper]{report}%especifica o tipo de documento que tenciona escrever: carta, artigo, relatório... neste caso é um relatório
+% [11pt,a4paper] Define o tamanho principal das letras do documento. caso não especifique uma delas, é assumido 10pt
+% a4paper -- Define o tamanho do papel.
+
+\usepackage[portuges]{babel}%Babel -- irá activar automaticamente as regras apropriadas de hifenização para a língua todo o
+                                   %-- o texto gerado é automaticamente traduzido para Português.
+                                   %  Por exemplo, “chapter” irá passar a “capítulo”, “table of contents” a “conteúdo”.
+                                   % portuges -- específica para o Português.
+\usepackage[utf8]{inputenc} % define o encoding usado texto fonte (input)--usual "utf8" ou "latin1
+
+\usepackage{graphicx} %permite incluir graficos, tabelas, figuras
+\usepackage{url} % para utilizar o comando \url{}
+\usepackage{enumerate} %permite escolher, nas listas enumeradas, se os iems sao marcados com letras ou s-romanos em vez de numeracao normal
+
+%\usepackage{apalike} % gerar biliografia no estilo 'named' (apalike)
+
+\usepackage{color} % Para escrever em cores
+
+\usepackage{multirow} %tabelas com multilinhas
+\usepackage{array} %formatação especial de tabelas em array
+
+\usepackage[pdftex]{hyperref} % transformar as referências internas do seu documento em hiper-ligações.
+
+%Exemplos de fontes -- nao e vulgar mudar o tipo de fonte
+%\usepackage{tgbonum} % Fonte de letra: TEX Gyre Bonum
+%\usepackage{lmodern} % Fonte de letra: Latin Modern Sans Serif
+%\usepackage{helvet}  % Fonte de letra: Helvetica
+%\usepackage{charter} % Fonte de letra:Charter
+
+\definecolor{saddlebrown}{rgb}{0.55, 0.27, 0.07} % para definir uma nova cor, neste caso 'saddlebrown'
+
+\usepackage{listings}  
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codeblue}{rgb}{0,0,255}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\definecolor{codefirebrick}{rgb}{160,0,0}
+
+\lstdefinestyle{mystyle}{
+	backgroundcolor=\color{backcolour},   
+	commentstyle=\color{codegreen},
+	keywordstyle=\color{codefirebrick},
+	numberstyle=\tiny\color{codegray},
+	stringstyle=\color{codeblue},
+	basicstyle=\ttfamily\footnotesize,
+	breakatwhitespace=false,         
+	breaklines=true,                 
+	captionpos=b,                    
+	keepspaces=true,                 
+	numbers=left,                    
+	numbersep=5pt,                  
+	showspaces=false,                
+	showstringspaces=false,
+	showtabs=false,                  
+	tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\usepackage{xspace} % deteta se a seguir a palavra tem uma palavra ou um sinal de pontuaçao se tiver uma palavra da espaço, se for um sinal de pontuaçao nao da espaço
+
+\parindent=0pt %espaço a deixar para fazer a  indentação da primeira linha após um parágrafo
+\parskip=2pt % espaço entre o parágrafo e o texto anterior
+
+\setlength{\oddsidemargin}{-1cm} %espaço entre o texto e a margem
+\setlength{\textwidth}{18cm} %Comprimento do texto na pagina
+\setlength{\headsep}{-1cm} %espaço entre o texto e o cabeçalho
+\setlength{\textheight}{23cm} %altura do texto na pagina
+
+% comando '\def' usado para definir abreviatura (macros)
+% o primeiro argumento é o nome do novo comando e o segundo entre chavetas é o texto original, ou sequência de controle, para que expande
+\def\darius{\textsf{Darius}\xspace}
+\def\antlr{\texttt{AnTLR}\xspace}
+\def\pe{\emph{Publicação Eletrónica}\xspace}
+\def\titulo#1{\section{#1}}    %no corpo do documento usa-se na forma '\titulo{MEU TITULO}'
+\def\super#1{{\em Supervisor: #1}\\ }
+\def\area#1{{\em \'{A}rea: #1}\\[0.2cm]}
+\def\resumo{\underline{Resumo}:\\ }
+
+
+
+
+
+\title{Processamento de Linguagens e Compiladores (3º Ano)\\
+       \textbf{Trabalho Prático 2}\\ Relatório de Desenvolvimento
+       }
+\author{Bruno Fernandes\\ (a95972) \and Nelson Almeida\\ (a97610)
+         \and Nuno Costa\\ (a97610)
+       }
+\date{15/01/2023}
+
+\begin{document} % corpo do documento
+\maketitle % apresentar titulo, autor e data
+
+
+\begin{abstract}  % resumo do documento
+\par O trabalho prático 2, no âmbito da UC de Processamento de Linguaguens e Compiladores alude-nos à criação de uma linguagem imperativa a nosso gosto bem como a criação de um compilador usando  os módulos de gramáticas tradutoras do Python. \\ 
+  Além disso, esta gramática tem de ser capaz de gerar código assembly a partir da linguagem imperativa, com recurso a algumas ferramentas como o lex e o yacc do Python. \\
+ Assim sendo, durante o realizar do relatório tentaremos sempre explicar de uma forma clara e suncinta todas as decisões tomadas pos nós,bem como as produções implementadas na gramática e ainda como foi desenvolvido o compilador.
+\end{abstract}
+
+
+\tableofcontents
+
+
+\chapter{Introdução} \label{chap:intro} %referência cruzada
+No âmbito da disciplina de Processamento de Linguagens e Compiladores foi-nos proposto pelo docente Pedro Rangel Henriques um trabalho de grupo cujos objetivos principais são: tornar-nos capazes de escrever gramáticas com uma maior facilidade, sermos capazes de desenvolver um processador de linguagens a partir de uma gramática tradutora e ainda de desenvolver um complilador produzindo código para uma máquina de stack virtual.
+\\
+\\
+A linguagem a ser usada na realização deste projeto, será uma linguagem imperativa simples com regras definidas pelo grupo. 
+\\
+O compilador desenvolvido para a nossa linguagem terá de gerar pseudo-código Assembly para uma VM, com base na gramática independente do contexto(GIC) que definimos.
+\\
+\\
+Neste documento apresentamos a nossa resolução para cada um dos problemas propostos, com recurso aos módulos 'Yacc/Lex' do 'PLY/Python'.
+
+
+\newpage
+
+
+\section*{Estrutura do Relatório}
+O relatório está organizado da seguinte forma:\\
+Começamos por fazer uma pequena introdução, capítulo 1, onde referimos o objetivo do trabalho a desenvolver. \\
+No capítulo 2 aprensentamos o enunciado dos problema proposto.\\
+O capítulo 3 demonstramos como está organizado o nosso trabalho.\\
+No capítulo seguinte, demonstramos o funcionamento de vários testes realizados pelo grupo.\\
+E, por fim, o ultimo capítulo contém a conclusão do trabalho realizado.
+
+\newpage
+
+
+
+\chapter{Problema Proposto}
+
+Pretende-se que comece por definir uma linguagem de programação imperativa simples, a seu gosto.
+Apenas deve ter em consideração que essa linguagem terá de permitir:
+\begin{itemize}
+	\item declarar variáveis at ómicas do tipo inteiro, com os quais se podem realizar as habituais operações aritméticas, relacionais e lógicas.
+	\item efetuar instruções algorítmicas básicas como a atribuição do valor de expressões numéricas a variáveis.
+	\item ler do standard input e escrever no standard output.
+    \item efetuar instruções de seleção para o controlo do fluxo de execução.
+    \item efetuar instruções de repetição(cíclicas) para o controlo de fluxo de execução, permitindo o seu aninhamento.\\
+    \underline{Note} que deve implementar pelo menos o ciclo \textbf{while-do},\textbf{repeat-until} ou \textbf{for-do}.
+\end{itemize}
+\\ \\
+Adicionalmente deve ainda suportar,à sua escolha, uma das duas funcionalidades seguintes:
+\begin{itemize}
+    \item declarar e manusear variáveis estruturadas do tipo array( a 1 ou 2 dimensões) de inteiros, em relação aos quais é apenas permitida a operação de indexação(índice inteiro).
+    \item definir e invocar subprogramas sem parâmetros mas que possam retornar um resultado do tipo inteiro.
+\end{itemize}
+
+\newpage
+
+\chapter{Concepção da Resolução}
+\section{Organização e estrutura}
+O nosso trabalho pode ser divido em \textbf{4} partes:
+\begin{itemize}
+\item Cosntrução da \textbf{GIC} que define a estrutura sintática da nossa liguaguem.
+\item Construção do analizador léxico, \textbf{lexer} .
+\item Construção do analizador sintático, \textbf{parser} .
+\item Conversão das instruções para código \textbf{Assembly} da  VM.    
+\end{itemize}
+Todas as funcionalidades descritas neste capítulo podem ser encontradas no anexo A do documento. \\ \\
+
+\section{GIC}
+A nossa linguagem é gerada pela seguinte grámatica independente de contexto:
+\begin{verbatim}
+Programa : Decls
+         | Atrib
+         | Corpo
+         | Decls Corpo
+         | Atrib Corpo
+
+Corpo    : Codigo
+
+Codigo   : Proc Codigo
+         | Atrib Codigo
+         | Proc
+         | Atrib
+
+Decls    : Decl
+         | Decl Decls
+
+Decl     : VAR ID
+         | MATRIZ ID
+         | MATRIZ ID INT INT
+
+Atrib    : VAR ID COM expr
+         | ALTERNA ID COM expr
+         | LISTA ID
+         | LISTA ID INT
+         | LISTA ID COM lista
+         | ALTERNA ID ABREPR expr FECHAPR ABREPR expr FECHAPR COM expr
+         | ALTERNA ID ABREPR expr FECHAPR COM lista
+
+lista    : ABREPR elems FECHAPR
+
+elems    : INT
+         | elems VIRG INT
+
+expr     : INT
+         | ID
+         | ENTRADAS
+         | BUSCA ID ABREPR expr FECHAPR
+         | BUSCA ID ABREPR expr FECHAPR ABREPR expr FECHAPR
+
+exprArit : expr SOMA expr
+         | expr MENUS expr
+         | expr SOMANBEZES expr
+         | expr DIBIDE expr
+         | expr SOBRAS expr
+
+exprRel  : NOUM ABREPC expr FECHAPC
+         | GEMEO ABREPC expr VIRG expr FECHAPC
+         | NAOGEMEO ABREPC expr VIRG expr FECHAPC
+         | MAISPIQUENO ABREPC expr VIRG expr FECHAPC
+         | MAISPIQUENOOUGEMEO ABREPC expr VIRG expr FECHAPC
+         | MAISGRANDE ABREPC expr VIRG expr FECHAPC
+         | MAISGRANDEOUGEMEO ABREPC expr VIRG expr FECHAPC
+         | expr IE expr
+         | expr OUE expr
+
+Proc     : if
+         | while
+         | saidas
+         | SWAP ID ABREPR INT FECHAPR COM ABREPR INT FECHAPR
+
+if       : SE ABREPC exprRel FECHAPC ENTAO ABRECHAV Codigo FECHACHAV FIM
+         | SE ABREPC exprRel FECHAPC ENTAO ABRECHAV Codigo FECHACHAV SENAO ABRECHAV Codigo FECHACHAV FIM
+
+while    : ENQUANTO ABREPC exprRel FECHAPC FAZ ABRECHAV Codigo FECHACHAV FIM
+
+saidas   : SAIDAS ASPA
+         | SAIDAS ID             
+\end{verbatim}
+
+\newpage
+
+\section{Lexer}
+O analisador léxico, \textbf{lexer}, é o responsável por 'capturar' os simbolos terminais(\textit{tokens}) da nossa linguagem através de expressões regulares. Para a implementação do analisador léxico utilizamos o módulo 'Lex' do 'PLY/Python'.\\ \\
+Os \textit{tokens} e respetivas expressões regulares da nossa linguagem são os seguintes:
+
+\begin{verbatim}
+
+ABRECHAV : '\{'
+FECHACHAV : '\}'
+ABREPC : '\('
+FECHAPC : '\)'
+ABREPR : '\['
+FECHAPR : '\]'
+VIRG : '\,'
+SOMA : '\+'
+MENUS : '\-'
+SOMANBEZES : '\*'
+DIBIDE : '\/'
+SOBRAS : '\%'
+STRING : '\"w+\"|\'w+\''
+ID : r'\w+'
+INT : '\d+'
+VAR : 'var'
+COM : 'com'
+MAISGRANDE : 'maisGrande'
+MAISPIQUENO : 'maisPiqueno'
+GEMEO : 'gemeo'
+NAOGEMEO : 'naogemeo'
+MAISGRANDEOUGEMEO : 'maisGrandeOuGemeo'
+MAISPIQUENOOUGEMEO : 'maisPiquenoOuGemeo'
+IE : 'ie'
+OUE : 'oue'
+NOUM : 'noum'
+ALTERNA : 'alterna'
+LISTA : 'lista'
+MATRIZ : 'matriz'
+BUSCA : 'busca'
+SWAP : 'swap'
+SENAO : 'senao'
+SE : 'se'
+ENTAO : 'entao'
+FIM : 'fim'
+ENQUANTO : 'enquanto'
+FAZ : 'faz'
+ENTRADAS : 'entradas'
+\end{verbatim}
+
+A implementação do analisador léxico pode ser encontrada no anexo A do documento. 
+\\ \\
+
+
+\section{Parser e geração do código Assembly da VM}
+O analisador sintático, \textbf{parser}, é  o responsável por verificar se o código escrito na nossa linguagem está correto sintaticamente, isto é, se  o código respeita as regras gramaticais definidas. \\ \\
+
+No caso de não existirem erros sintáticos o \textbf{parser} converte o código da nossa linguagem em código \textbf{Assemby} da máquina virtual. caso existam erros, então será mostrado ao utilizador uma mensagem do erro sintático produzido. \\ \\
+A implementação do analisador sintático pode ser encontrada no anexo A do nosso relatório.
+
+
+\subsection{Algumas notas sobre declaração de variáveis}
+
+Na geração do código para declarar uma variavel sem valor fazemos:
+\begin{lstlisting}
+PUSHI 0    
+\end{lstlisting}
+Sendo a variável predefinida a 0.\\
+
+Para declarar uma variavel com valor fazemos:
+\begin{lstlisting}
+PUSHI <valor>
+STOREG <endereco>
+\end{lstlisting}
+\\
+Para declarar uma lista de valores temos de fazer sempre:
+\begin{lstlisting}
+PUSHN <tamanho>
+\end{lstlisting}
+Inicializando todos os valores da lista a 0.\\ \\
+Seja a uma lista de tamanho 3, por exemplo:
+\begin{lstlisting}
+lista a tamanho
+lista a com [valor1,valor2,valor3]
+\end{lstlisting}
+Para atribuir valores à lista fazemos:
+\begin{lstlisting}
+PUSHN <tamanho>
+PUSHGP
+PUSHI 0
+PUSHI <valor1>
+STOREN
+PUSHGP
+PUSHI 1
+PUSHI <valor2>
+STOREN
+PUSHGP
+PUSHI 2
+PUSHI <valor3>
+STOREN 
+\end{lstlisting}
+
+
+No caso das matrizes, para declarar uma matriz fazemos: 
+\begin{lstlisting}
+matriz <nomeDaMatriz> <tamanho1> <tamanho2>    
+\end{lstlisting}
+Caso a matriz m seja de tamanho 2x2, então gera-se:
+\begin{lstlisting}
+PISHN 4
+\end{lstlisting}
+Inicializando todos os valores a 0. \\ \\
+
+Para alterar os valores de uma matriz temos duas maneiras de o fazer:
+\begin{enumerate}
+\item Alteramos uma posição em especifico:
+\begin{lstlisting}
+alterna <nomeDaMatriz> [<indice1>] [<indice2>]  com <valor>    
+\end{lstlisting}
+\item Alteramos uma linha da matriz passando uma lista:
+\begin{lstlisting}
+alterna <nomeDaMatriz> [<indice1>] com [valor1,valor2]
+\end{lstlisting}
+\end{enumerate}
+
+Tomando como exemplo uma matriz 2x2, ao fazer a alteração de valores pela 1ª opção:
+\begin{lstlisting}
+alterna m [0][1] com <valor>
+\end{lstlisting}
+Gera-se o seguinte:
+\begin{lstlisting}
+PUSHN 4
+PUSHGP
+PUSHI 0
+PADD
+PUSHI 0
+PUSHI <valor>
+STOREN
+\end{lstlisting}
+
+Fazendo o mesmo mas de acordo com a 2ª opção:
+\begin{lstlisting}
+alterna m [0] com [valor1,valor2]
+\end{lstlisting}
+Gera-se o seguinte:
+\begin{lstlisting}
+PUSHN 4
+PUSHGP
+PUSHI 0
+PADD
+PUSHI 0
+PUSHI 2
+MUL
+PADD
+PUSHI 0
+PUSHI <valor1>
+STOREN
+PUSHGP
+PUSHI 0
+PADD
+PUSHI 0
+PUSHI 2
+MUL
+PADD
+PUSHI 1
+PUSHI <valor2>
+STOREN
+\end{lstlisting}
+
+\chapter{Demonstração do Funcionamento}
+\section{Geração e  execução de código Assembly}
+Para utilizar a nossa linguagem, o utilizador tem 3 opções:
+\begin{enumerate}
+\item Escrever instruções de acordo com as regras gramaticais da linguagem.
+\begin{verbatim} 
+>> python3 yacc.py
+\end{verbatim}
+\item Escrever e guardar as instruções num ficheiro .plo de acordo com as regras gramaticais da linguagem.
+\begin{verbatim} 
+>> python3 yacc.py <ficheiro de input> 
+\end{verbatim}
+\item Escrever e guardar as instruções num ficheiro .plo de acordo com as regras gramaticais da linguagem e escolher o ficheiro de saída.
+\begin{verbatim} 
+>> python3 yacc.py <ficheiro de input> <ficheiro de output>
+\end{verbatim} 
+
+Por exemplo:
+\begin{verbatim} 
+>> python3 yacc.py .\testes\factorial.plo output.vm
+\end{verbatim} 
+
+\underline{Nota:} Caso o utilizador escolha fazer a opção 1 ou 2 é criado um ficheiro "a.vm" onde será guardado o código Assembly gerado.
+\end{enumerate}
+
+
+
+
+
+\section{Teste 1}
+Calcula o fatorial de um número passado como input. \\
+\underline{Ficheiro de input:} 'factorial.plo'
+\subsection{Conteúdo do ficheiro}
+
+\begin{lstlisting}[language=python]
+saidas "Factorial: "
+var n com entradas
+saidas n
+var res com 1
+
+enquanto (maisGrande(n,0)) faz {
+    alterna res com res * n
+    alterna n com n - 1
+} fim
+
+saidas "\nResultado: "
+saidas res
+\end{lstlisting}
+
+\subsection{Código assembly gerado}
+\begin{lstlisting}[languague=Assembler]
+START
+PUSHS "Factorial: "
+WRITES
+READ
+ATOI
+STOREG 0
+PUSHG 0
+WRITEI
+PUSHI 1
+STOREG 1
+l0c: NOP
+PUSHG 0
+PUSHI 0
+SUP
+JZ l0f
+PUSHG 1
+PUSHG 0
+MUL
+STOREG 1
+PUSHG 0
+PUSHI 1
+SUB
+STOREG 0
+JUMP l0c
+l0f: NOP
+PUSHS "\nResultado: "
+WRITES
+PUSHG 1
+WRITEI
+STOP
+\end{lstlisting}
+
+
+\subsection{Execução da VM com o código gerado}
+\begin{lstlisting}[language=python]
+Factorial: 5
+Resultado: 120
+\end{lstlisting}
+
+
+\section{Teste 2}
+Procura determinado número pelo seu índice. \\
+\underline{Ficheiro de input:} 'busca\_no\_array.plo'.
+
+\subsection{Conteúdo do ficheiro}
+
+\begin{lstlisting}[language=python]
+lista a 10
+lista a com [1,2,3,4,5,6,7,8,9,10]
+
+saidas "Introduza um indice do array:\n"
+var i com entradas
+
+var x com busca a[i]
+
+saidas "Valor: "
+saidas x
+\end{lstlisting}
+
+\subsection{Código assembly gerado}
+\begin{lstlisting}[language=Assembler]
+PUSHN 10
+START
+PUSHGP
+PUSHI 0
+PUSHI 1
+STOREN
+PUSHGP
+PUSHI 1
+PUSHI 2
+STOREN
+PUSHGP
+PUSHI 2
+PUSHI 3
+STOREN
+PUSHGP
+PUSHI 3
+PUSHI 4
+STOREN
+PUSHGP
+PUSHI 4
+PUSHI 5
+STOREN
+PUSHGP
+PUSHI 5
+PUSHI 6
+STOREN
+PUSHGP
+PUSHI 6
+PUSHI 7
+STOREN
+PUSHGP
+PUSHI 7
+PUSHI 8
+STOREN
+PUSHGP
+PUSHI 8
+PUSHI 9
+STOREN
+PUSHGP
+PUSHI 9
+PUSHI 10
+STOREN
+PUSHS "Introduza um indice do array:\n"
+WRITES
+READ
+ATOI
+STOREG 10
+PUSHGP
+PUSHI 0
+PADD
+PUSHG 10
+LOADN
+STOREG 11
+PUSHS "Valor: "
+WRITES
+PUSHG 11
+WRITEI
+STOP
+\end{lstlisting}
+
+\subsection{Código gerado pela VM}
+\begin{lstlisting}[language=python]
+Introduza um indice do array: 3
+Valor: 4
+\end{lstlisting}
+
+
+\section{Teste 3}
+Lê os 5 valores de um array passados como input. \\
+\underline{Ficheiro de input:} 'read\_array.plo'.
+
+\subsection{Conteúdo do ficheiro}
+
+\begin{lstlisting}[language=python]
+var n com 5
+var i com 0
+lista a 5
+
+enquanto (maisPiqueno(i,n)) faz {
+    alterna a [i] com entradas
+    alterna i com i + 1
+} fim
+
+saidas "Array gerado:\n"
+saidas a
+\end{lstlisting}
+
+\subsection{Código assembly gerado}
+\begin{lstlisting}[languague=Assembler]
+PUSHI 5
+STOREG 0
+START
+PUSHI 0
+STOREG 1
+PUSHN 5
+l0c: NOP
+PUSHG 1
+PUSHG 0
+INF
+JZ l0f
+PUSHGP
+PUSHI 2
+PADD
+PUSHG 1
+READ
+ATOI
+STOREN
+PUSHG 1
+PUSHI 1
+ADD
+STOREG 1
+JUMP l0c
+l0f: NOP
+PUSHS "Array gerado:\n"
+WRITES
+PUSHS "["
+WRITES
+PUSHGP
+PUSHI 2
+PADD
+PUSHI 0
+LOADN
+WRITEI
+PUSHS ","
+WRITES
+PUSHGP
+PUSHI 2
+PADD
+PUSHI 1
+LOADN
+WRITEI
+PUSHS ","
+WRITES
+PUSHGP
+PUSHI 2
+PADD
+PUSHI 2
+LOADN
+WRITEI
+PUSHS ","
+WRITES
+PUSHGP
+PUSHI 2
+PADD
+PUSHI 3
+LOADN
+WRITEI
+PUSHS ","
+WRITES
+PUSHGP
+PUSHI 2
+PADD
+PUSHI 4
+LOADN
+WRITEI
+PUSHS "]"
+WRITES
+STOP
+\end{lstlisting}
+
+\subsection{Código gerado pela VM}
+\begin{lstlisting}[language=python]
+Array gerado:
+[1,2,3,4,5]
+\end{lstlisting}
+
+\section{Teste 4}
+Realiza o produto de vários números passados como input. \\
+\underline{Ficheiro de input:} 'produtorio.plo'.
+
+\subsection{Conteúdo do ficheiro}
+
+\begin{lstlisting}[language=python]
+saidas "Quantos numeros? "
+var n com entradas
+saidas n
+var res com 1
+var x com 1
+
+enquanto (maisGrande(n,0)) faz {
+    alterna x com entradas
+    alterna res com res * x
+    alterna n com n - 1
+} fim
+
+saidas "\nResultado: "
+saidas res
+\end{lstlisting}
+
+
+\subsection{Código assembly gerado}
+\begin{lstlisting}[languague=Assembler]
+START
+PUSHS "Quantos numeros? "
+WRITES
+READ
+ATOI
+STOREG 0
+PUSHG 0
+WRITEI
+PUSHI 1
+STOREG 1
+PUSHI 1
+STOREG 2
+l0c: NOP
+PUSHG 0
+PUSHI 0
+SUP
+JZ l0f
+READ
+ATOI
+STOREG 2
+PUSHG 1
+PUSHG 2
+MUL
+STOREG 1
+PUSHG 0
+PUSHI 1
+SUB
+STOREG 0
+JUMP l0c
+l0f: NOP
+PUSHS "\nResultado: "
+WRITES
+PUSHG 1
+WRITEI
+STOP   
+\end{lstlisting}
+
+\subsection{Código gerado pela VM}
+\begin{lstlisting}[language=python]
+Quantos numeros? 5
+Resultado: 120
+\end{lstlisting}
+
+\section{Teste 5}
+A partir de 3 arrays de tamanho 3, crai uma matriz de tamanho 3x3. \\
+\underline{Ficheiro de input:} 'matriz.plo'.
+
+\subsection{Conteúdo do ficheiro}
+
+\begin{lstlisting}[language=python]
+matriz m 3 3
+
+alterna m [0] com [1,2,3]
+alterna m [1] com [4,5,6]
+alterna m [2] com [7,8,9]
+
+saidas m
+\end{lstlisting}
+
+\subsection{Código assembly gerado}
+\begin{lstlisting}[languague=Assembler]
+PUSHN 9
+START
+PUSHGP
+PUSHI 0
+PADD
+PUSHI 0
+PUSHI 3
+MUL
+PADD
+PUSHI 0
+PUSHI 1
+STOREN
+PUSHGP
+PUSHI 0
+PADD
+PUSHI 0
+PUSHI 3
+MUL
+PADD
+PUSHI 1
+PUSHI 2
+STOREN
+PUSHGP
+PUSHI 0
+PADD
+PUSHI 0
+PUSHI 3
+MUL
+PADD
+PUSHI 2
+PUSHI 3
+STOREN
+PUSHGP
+PUSHI 0
+PADD
+PUSHI 1
+PUSHI 3
+MUL
+PADD
+PUSHI 0
+PUSHI 4
+STOREN
+PUSHGP
+PUSHI 0
+PADD
+PUSHI 1
+PUSHI 3
+MUL
+PADD
+PUSHI 1
+PUSHI 5
+STOREN
+PUSHGP
+PUSHI 0
+PADD
+PUSHI 1
+PUSHI 3
+MUL
+PADD
+PUSHI 2
+PUSHI 6
+STOREN
+PUSHGP
+PUSHI 0
+PADD
+PUSHI 2
+PUSHI 3
+MUL
+PADD
+PUSHI 0
+PUSHI 7
+STOREN
+PUSHGP
+PUSHI 0
+PADD
+PUSHI 2
+PUSHI 3
+MUL
+PADD
+PUSHI 1
+PUSHI 8
+STOREN
+PUSHGP
+PUSHI 0
+PADD
+PUSHI 2
+PUSHI 3
+MUL
+PADD
+PUSHI 2
+PUSHI 9
+STOREN
+PUSHS "["
+WRITES
+PUSHS "["
+WRITES
+PUSHGP
+PUSHI 0
+PADD
+PUSHGP
+PUSHI 0
+PUSHI 3
+MUL
+PADD
+PUSHI 0
+LOADN
+WRITEI
+POP 1
+PUSHS ","
+WRITES
+PUSHGP
+PUSHI 0
+PADD
+PUSHGP
+PUSHI 0
+PUSHI 3
+MUL
+PADD
+PUSHI 1
+LOADN
+WRITEI
+POP 1
+PUSHS ","
+WRITES
+PUSHGP
+PUSHI 0
+PADD
+PUSHGP
+PUSHI 0
+PUSHI 3
+MUL
+PADD
+PUSHI 2
+LOADN
+WRITEI
+POP 1
+PUSHS "]"
+WRITES
+PUSHS ","
+WRITES
+PUSHS "["
+WRITES
+PUSHGP
+PUSHI 0
+PADD
+PUSHGP
+PUSHI 1
+PUSHI 3
+MUL
+PADD
+PUSHI 0
+LOADN
+WRITEI
+POP 1
+PUSHS ","
+WRITES
+PUSHGP
+PUSHI 0
+PADD
+PUSHGP
+PUSHI 1
+PUSHI 3
+MUL
+PADD
+PUSHI 1
+LOADN
+WRITEI
+POP 1
+PUSHS ","
+WRITES
+PUSHGP
+PUSHI 0
+PADD
+PUSHGP
+PUSHI 1
+PUSHI 3
+MUL
+PADD
+PUSHI 2
+LOADN
+WRITEI
+POP 1
+PUSHS "]"
+WRITES
+PUSHS ","
+WRITES
+PUSHS "["
+WRITES
+PUSHGP
+PUSHI 0
+PADD
+PUSHGP
+PUSHI 2
+PUSHI 3
+MUL
+PADD
+PUSHI 0
+LOADN
+WRITEI
+POP 1
+PUSHS ","
+WRITES
+PUSHGP
+PUSHI 0
+PADD
+PUSHGP
+PUSHI 2
+PUSHI 3
+MUL
+PADD
+PUSHI 1
+LOADN
+WRITEI
+POP 1
+PUSHS ","
+WRITES
+PUSHGP
+PUSHI 0
+PADD
+PUSHGP
+PUSHI 2
+PUSHI 3
+MUL
+PADD
+PUSHI 2
+LOADN
+WRITEI
+POP 1
+PUSHS "]"
+WRITES
+PUSHS "]"
+WRITES
+STOP
+\end{lstlisting}
+
+\subsection{Execução da VM com o código gerado}
+\begin{lstlisting}[language=python]
+[[1,2,3],[4,5,6],[7,8,9]]
+\end{lstlisting}
+
+\section{Teste 6}
+Troca a posição de um certo valor do array por um outro, tendo em conta os índices . \\
+\underline{Ficheiro de input:} 'swap\_array.plo'.
+
+\subsection{Conteúdo do ficheiro}
+
+\begin{lstlisting}[language=python]
+lista a 5
+lista a com [1,2,3,4,5]
+
+saidas "Array inicial:\n"
+saidas a
+
+saidas "\nTroca do indice 1 com indice 3."
+
+swap a [1] com [3]
+
+saidas "Array inicial:\n"
+saidas a
+\end{lstlisting}
+
+\subsection{Código assembly gerado}
+\begin{lstlisting}[languague=Assembler]
+PUSHN 5
+START
+PUSHGP
+PUSHI 0
+PUSHI 1
+STOREN
+PUSHGP
+PUSHI 1
+PUSHI 2
+STOREN
+PUSHGP
+PUSHI 2
+PUSHI 3
+STOREN
+PUSHGP
+PUSHI 3
+PUSHI 4
+STOREN
+PUSHGP
+PUSHI 4
+PUSHI 5
+STOREN
+PUSHS "Array inicial:\n"
+WRITES
+PUSHS "["
+WRITES
+PUSHGP
+PUSHI 0
+PADD
+PUSHI 0
+LOADN
+WRITEI
+PUSHS ","
+WRITES
+PUSHGP
+PUSHI 0
+PADD
+PUSHI 1
+LOADN
+WRITEI
+PUSHS ","
+WRITES
+PUSHGP
+PUSHI 0
+PADD
+PUSHI 2
+LOADN
+WRITEI
+PUSHS ","
+WRITES
+PUSHGP
+PUSHI 0
+PADD
+PUSHI 3
+LOADN
+WRITEI
+PUSHS ","
+WRITES
+PUSHGP
+PUSHI 0
+PADD
+PUSHI 4
+LOADN
+WRITEI
+PUSHS "]"
+WRITES
+PUSHS "\nTroca do indice 1 com indice 3."
+WRITES
+PUSHG 1
+PUSHG 3
+STOREG 1
+STOREG 3
+PUSHS "Array inicial:\n"
+WRITES
+PUSHS "["
+WRITES
+PUSHGP
+PUSHI 0
+PADD
+PUSHI 0
+LOADN
+WRITEI
+PUSHS ","
+WRITES
+PUSHGP
+PUSHI 0
+PADD
+PUSHI 1
+LOADN
+WRITEI
+PUSHS ","
+WRITES
+PUSHGP
+PUSHI 0
+PADD
+PUSHI 2
+LOADN
+WRITEI
+PUSHS ","
+WRITES
+PUSHGP
+PUSHI 0
+PADD
+PUSHI 3
+LOADN
+WRITEI
+PUSHS ","
+WRITES
+PUSHGP
+PUSHI 0
+PADD
+PUSHI 4
+LOADN
+WRITEI
+PUSHS "]"
+WRITES
+STOP
+\end{lstlisting}
+
+
+\subsection{Código gerado pela VM}
+\begin{lstlisting}[language=python]
+Array inicial:
+[1,2,3,4,5]
+Troca do indice 1 com indice 3.Array inicial:
+[1,4,3,2,5]
+\end{lstlisting}
+
+
+
+
+
+\chapter{Conclusão}
+No decorrer deste trabalho, tentamos sempre aplicar todo e qualquer conhecimento adquirido em aulas, o que nos permitiu aprofundar e consolidar melhor a matéria lecionada nesta UC.
+
+Consideramos que, no geral,conseguimos alcançar os objetivos esperados e desta forma temos mais bagagem no que toca à escrita de gramaticas e no desenvolvimento de compiladores de linguagens.
+Este trabalho levou-nos também a obter um maior conhecimento no que diz respeito à máquina virtuale a uma maior entendimento da escrita em Assembly.
+
+Em suma, todo o trabalho aplicado na realização deste projeto foi bastante útil para consolidar as nossas bases e dar-nos também alguma naturalidade na abordagem de certas temáticas da UC que poderão vir a ser necessárias no nosso futuro profissional.
+
+\appendix % apendice
+\chapter{Código do Programa}
+
+\textbf{Ficheiro lex2.py}
+\begin{scriptsize}
+\begin{lstlisting}[language=python]
+import ply.lex as lex
+
+tokens = [
+    "ID",
+    "VAR",
+    "COM",
+
+    "ABREPC",
+    "FECHAPC",
+    "ABREPR",
+    "FECHAPR",
+    "ABRECHAV",
+    "FECHACHAV",
+    "VIRG",
+
+    "INT",
+
+    'SOMA',
+    'MENUS',
+    'SOMANBEZES',
+    'DIBIDE',
+    'SOBRAS',
+
+    'MAISGRANDE',
+    'MAISPIQUENO',
+    'GEMEO',
+    'NAOGEMEO',
+    'MAISGRANDEOUGEMEO',
+    'MAISPIQUENOOUGEMEO',
+
+    'IE',
+    'OUE',
+    'NOUM',
+
+    "ALTERNA",
+
+    "LISTA",
+    "MATRIZ",
+    "BUSCA",
+    "SWAP",
+
+    "SENAO",
+    "SE",
+    "ENTAO",
+    "FIM",
+
+    "ENQUANTO",
+    "FAZ",
+
+    "ENTRADAS",
+    "SAIDAS",
+    "STRING"
+]
+
+t_ABRECHAV = r"\{"
+t_FECHACHAV = r"\}"
+t_ABREPC = r'\('
+t_FECHAPC = r'\)'
+t_ABREPR = r'\['
+t_FECHAPR = r'\]'
+t_VIRG = r'\,'
+t_SOMA = r'\+'
+t_MENUS = r'\-'
+t_SOMANBEZES = r'\*'
+t_DIBIDE = r'\/'
+t_SOBRAS = r'\%'
+t_STRING = r"\"w+\"|\'w+\'"
+
+t_ignore = ' \r\n\t'
+
+t_ID = r"\w+"
+
+
+def t_INT(t):
+    r'\d+'
+    t.type = "INT"
+    return t
+
+
+def t_COMENTARIO(t):
+    r'comentario'
+    t.type = "COMENTARIO"
+    return t
+
+
+def t_VAR(t):
+    r'var'
+    t.type = "VAR"
+    return t
+
+
+def t_COM(t):
+    r'com'
+    t.type = "COM"
+    return t
+
+def t_ALTERNA(t):
+    r'alterna'
+    t.type = "ALTERNA"
+    return t
+
+
+def t_MAISGRANDE(t):
+    r"maisGrande"
+    t.type = "MAISGRANDE"
+    return t
+
+
+def t_MAISPIQUENO(t):
+    r"maisPiqueno"
+    t.type = "MAISPIQUENO"
+    return t
+
+
+def t_NAOGEMEO(t):
+    r"naogemeo"
+    t.type = "NAOGEMEO"
+    return t
+
+
+def t_GEMEO(t):
+    r"gemeo"
+    t.type = "GEMEO"
+    return t
+
+
+def t_MAISGRANDEOUGEMEO(t):
+    r"maisGrandeOuGemeo"
+    t.type = "MAISGRANDEOUGEMEO"
+    return t
+
+
+def t_MAISPIQUENOOUGEMEO(t):
+    r"maisPiquenoOuGemeo"
+    t.type = "MAISPIQUENOOUGEMEO"
+    return t
+
+
+def t_IE(t):
+    r"ie"
+    t.type = "IE"
+    return t
+
+
+def t_OUE(t):
+    r"oue"
+    t.type = "OUE"
+    return t
+
+
+def t_NOUM(t):
+    r"noum"
+    t.type = "NOUM"
+    return t
+
+
+def t_LISTA(t):
+    r'lista'
+    t.type = "LISTA"
+    return t
+
+
+def t_MATRIZ(t):
+    r'matriz'
+    t.type = "MATRIZ"
+    return t
+
+
+def t_BUSCA(t):
+    r'busca'
+    t.type = "BUSCA"
+    return t
+
+
+def t_SWAP(t):
+    r'swap'
+    t.type = "SWAP"
+    return t
+
+
+def t_SENAO(t):
+    r'senao'
+    t.type = "SENAO"
+    return t
+
+
+def t_SE(t):
+    r'se'
+    t.type = "SE"
+    return t
+
+
+def t_ENTAO(t):
+    r'entao'
+    t.type = "ENTAO"
+    return t
+
+
+def t_ENQUANTO(t):
+    r'enquanto'
+    t.type = "ENQUANTO"
+    return t
+
+
+def t_FAZ(t):
+    r'faz'
+    t.type = "FAZ"
+    return t
+
+
+def t_FIM(t):
+    r'fim'
+    t.type = "FIM"
+    return t
+
+
+def t_ENTRADAS(t):
+    r"entradas"
+    t.type = "ENTRADAS"
+    return t
+
+
+def t_SAIDAS(t):
+    r"saidas"
+    t.type = "SAIDAS"
+    return t
+
+
+def t_error(t):
+    print('Illegal character: ' + t.value[0])
+    t.lexer.skip(1)
+    return
+
+
+lexer = lex.lex()
+\end{lstlisting}
+\end{scriptsize}
+
+\\ \\  \textbf{Ficheiro yacc3.py}
+\begin{scriptsize} 
+\begin{lstlisting}[language=python]
+import ply.yacc as yacc
+import random as rd
+
+from lex2 import *
+import sys
+
+
+def p_Programa_Empty(p):
+    '''
+    Programa : Decls
+             | Atrib
+    '''
+    parser.assembly = f'{p[1]}'
+
+
+def p_Programa(p):
+    '''
+    Programa : Decls Corpo
+    '''
+    parser.assembly = f'{p[1]}START\n{p[2]}STOP\n'
+
+
+def p_Programa_Corpo(p):
+    '''
+    Programa : Corpo
+    '''
+    parser.assembly = f"START\n{p[1]}STOP\n"
+
+
+def p_Corpo(p):
+    '''
+    Corpo : Proc
+          | Atrib
+    '''
+    p[0] = f"{p[1]}"
+
+
+def p_Corpo_Rec(p):
+    '''
+    Corpo : Proc Corpo
+          | Atrib Corpo
+    '''
+    p[0] = f"{p[1]}{p[2]}"
+
+
+def p_Decls(p):
+    "Decls : Decl"
+    p[0] = f'{p[1]}'
+
+
+def p_DeclsRec(p):
+    "Decls : Decls Decl"
+    p[0] = f'{p[1]}{p[2]}'
+
+
+def p_expr_arit(p):
+    '''
+    expr : exprArit
+         | exprRel
+    '''
+    p[0] = p[1]
+
+
+def p_Proc(p):
+    '''
+    Proc : if
+         | while
+         | saidas
+    '''
+    p[0] = p[1]
+
+
+# Declaração de uma variavel sem valor
+def p_Decl(p):
+    "Decl : VAR ID"
+    varName = p[2]
+    if varName not in parser.variaveis:
+        parser.variaveis[varName] = (parser.stackPointer,None)
+        p[0] = "PUSHI 0\n"
+        parser.stackPointer += 1
+    else:
+        parser.exito = False
+        parser.error = f"Variável com o nome {varName} já existe"
+
+
+# Declaração de uma variável com atribuição de um valor
+def p_Atrib_expr(p):
+    "Atrib : VAR ID COM expr"
+    varName = p[2]
+    if varName not in parser.variaveis:
+        value = p[4]
+        parser.variaveis[varName] = (parser.stackPointer, None)
+        p[0] = f"{value}STOREG {parser.stackPointer}\n"
+        parser.stackPointer += 1
+    else:
+        parser.exito = False
+        parser.error = f"Variável com o nome {varName} já existe"
+
+
+# Altera valor de um variável
+def p_alterna_var(p):
+    '''Atrib : ALTERNA ID COM expr'''
+    varName = p[2]
+    if varName in parser.variaveis:
+        #parser.variaveis[varName] = (p[4], parser.variaveis[varName][0])
+        p[0] = f"{p[4]}STOREG {parser.variaveis[varName][0]}\n"
+
+
+def p_expr(p):
+    "expr : INT"
+    p[0] = f"PUSHI {int(p[1])}\n"
+
+
+def p_expr_var(p):
+    "expr : ID"
+    varName = p[1]
+    if varName in parser.variaveis:
+        p[0] = f"PUSHG {parser.variaveis[varName][0]}\n"
+
+
+def p_expr_entradas(p):
+    "expr : ENTRADAS"
+    p[0] = f"READ\nATOI\n"
+
+
+# Declara lista sem tamanho
+def p_Decl_Lista_NoSize(p):
+    "Decl : LISTA ID"
+    listName = p[2]
+    if listName not in parser.variaveis:
+        parser.variaveis[listName] = (parser.stackPointer, 0)
+        p[0] = f"PUSHN 0\n"
+        parser.stackPointer += 1
+    else:
+        parser.error = (
+            f"Variável com o nome {listName} já definida anteriormente.")
+        parser.exito = False
+
+
+# Declara lista com tamanho INT
+def p_DeclLista_Size(p):
+    "Decl : LISTA ID INT"
+    listName = p[2]
+    size = int(p[3])
+    if listName not in parser.variaveis:
+        if size > 0:
+            parser.variaveis[listName] = (parser.stackPointer, size)
+            p[0] = f"PUSHN {size}\n"
+            parser.stackPointer += size
+        else:
+            parser.error = f"Impossível declarar um array de tamanho {size}"
+            parser.exito = False
+    else:
+        parser.error = (
+            f"Variável com o nome {listName} já definida anteriormente.")
+        parser.exito = False
+
+
+# Atribui valores à lista com outra lista
+def p_AtribLista_lista(p):
+    "Atrib : LISTA ID COM lista"
+    lista = p[4]
+    varName = p[2]
+    if varName in parser.variaveis:
+        if len(lista)<parser.variaveis[varName][1]:
+            assm = ""
+            for i in lista:
+                assm += f"PUSHI {i}\n"
+
+            parser.variaveis[varName] = (parser.stackPointer, parser.variaveis[varName][1])
+            parser.stackPointer += len(lista)
+            p[0] = assm
+        else:
+            parser.error = f"Variável com o nome {varName} não definida"
+            parser.exito = False
+    else:
+        assm = ""
+        for i in lista:
+            assm += f"PUSHI {i}\n"
+
+        parser.variaveis[varName] = (parser.stackPointer, len(lista))
+        parser.stackPointer += len(lista)
+        p[0] = assm
+
+
+
+# Altera valor de um indice da lista
+def p_AlternaLista_elem(p):
+    "Atrib : ALTERNA ID ABREPR expr FECHAPR COM expr"
+    varName = p[2]
+    pos = p[4]
+    if varName in parser.variaveis:
+        p[0] = f"PUSHGP\nPUSHI {parser.variaveis[varName][0]}\nPADD\n{p[4]}{p[7]}STOREN\n"
+    else:
+        parser.error = f"Variável com o nome {varName} não definida"
+        parser.exito = False
+
+
+# Declara lista sem tamanho
+def p_Decl_Matriz_NoSize(p):
+    "Decl : MATRIZ ID"
+    listName = p[2]
+    if listName not in parser.variaveis:
+        parser.variaveis[listName] = (parser.stackPointer, 0, 0)
+        p[0] = f"PUSHN 0\n"
+        parser.stackPointer += 1
+    else:
+        parser.error = (
+            f"Variável com o nome {listName} já definida anteriormente.")
+        parser.exito = False
+
+
+# Declara matriz com tamanho INT INT
+def p_DeclMatriz_Size(p):
+    "Decl : MATRIZ ID INT INT"
+    listName = p[2]
+    size = int(p[3])
+    size1 = int(p[4])
+    if listName not in parser.variaveis:
+        parser.variaveis[listName] = (parser.stackPointer, size, size1)
+        p[0] = f"PUSHN {size*size1}\n"
+        parser.stackPointer += size*size1
+    else:
+        parser.error = (
+            f"Variável com o nome {listName} já definida anteriormente.")
+        parser.exito = False
+
+
+# Função que altera o valor de um indice da matriz por outro
+def p_AtribMatriz_comExpr(p):
+    "Atrib : ALTERNA ID ABREPR expr FECHAPR ABREPR expr FECHAPR COM expr"
+    matName = p[2]
+    if matName in parser.variaveis:
+        if len(parser.variaveis[matName]):
+            p[0] = f'''PUSHGP\nPUSHI {parser.variaveis[matName][0]}\nPADD\n{p[4]}PUSHI {parser.variaveis[matName][2]}MUL\nPADD\n{p[7]}{p[10]}STOREN\n'''
+        else:
+            parser.error = f"Operação inválida, variável {matName} não é uma matriz"
+            parser.exito = False
+    else:
+        parser.error = f"Variável não declarada anteriormente"
+        parser.exito = False
+
+
+# Função que altera uma lista da matriz por outra
+def p_AtribMatriz_comLista(p):
+    "Atrib : ALTERNA ID ABREPR expr FECHAPR COM lista"
+    matName = p[2]
+    if matName in parser.variaveis:
+        if len(parser.variaveis[matName]) == 3:
+            if len(p[7]) <= parser.variaveis[matName][2]:
+                assm = ""
+                j = 0
+                for i in p[7]:
+                    assm += f'''PUSHGP\nPUSHI {parser.variaveis[matName][0]}\nPADD\n{p[4]}PUSHI {parser.variaveis[matName][2]}\nMUL\nPADD\nPUSHI {j}\nPUSHI {i}\nSTOREN\n'''
+                    j += 1
+                p[0] = f'{assm}'
+            else:
+                parser.error = f"Tamanho da lista maior do que o alocado"
+                parser.exito = False
+        else:
+            parser.error = f"Operação inválida, variável {matName} não é uma matriz"
+            parser.exito = False
+    else:
+        parser.error = f"Variável não declarada anteriormente"
+        parser.exito = False
+
+
+# Função que vai buscar o valor do indice na lista
+def p_ProcBusca_Lista(p):
+    "Proc : BUSCA ID ABREPR expr FECHAPR"
+    varName = p[2]
+    indice = p[4]
+    if varName in parser.variaveis:
+        p[0] = f"PUSHGP\nPUSHI {parser.variaveis[varName][0]}\nPADD\n{indice}LOADN\n"
+    else:
+        parser.error = (
+            f"Variável com o nome {varName} não definida anteriormente.")
+        parser.exito = False
+
+
+# Função que vai buscar o valor do indice na matriz
+def p_ProcBusca_Matriz(p):
+    "Proc : BUSCA ID ABREPR expr FECHAPR ABREPR expr FECHAPR"
+    varName = p[2]
+    indice1 = p[4]
+    indice2 = p[7]
+    if varName in parser.variaveis:
+        p[0] = f"PUSHGP\nPUSHI {parser.variaveis[varName][0]}\nPADD\n{indice1}PUSHI {parser.variaveis[varName][2]}\nMUL\nPADD\n{indice2}LOADN\n"
+    else:
+        parser.error = f"Variável com o nome {varName} não definida"
+        parser.exito = False
+
+
+# Função swap entre elementos do mesmo array
+def p_ProcSwap_Lista(p):
+    "Proc : SWAP ID ABREPR expr FECHAPR COM ABREPR expr FECHAPR"
+    varName = p[2]
+    indice1 = p[4]
+    indice2 = p[8]
+    if varName in parser.variaveis:
+        p[0] = f"PUSHG {parser.variaveis[varName][0]}"
+    else:
+        parser.error = (
+            f"Variável com o nome {varName} não definida anteriormente.")
+        parser.exito = False
+
+
+# Expressão Aritmética Soma
+def p_soma(p):
+    "exprArit : expr SOMA expr"
+    p[0] = f"{p[1]}{p[3]}ADD\n"
+
+
+# Expressão Aritmética Subtração
+def p_sub(p):
+    "exprArit : expr MENUS expr"
+    p[0] = f"{p[1]}{p[3]}SUB\n"
+
+
+# Expressão Aritmética Multiplicação
+def p_mult(p):
+    "exprArit : expr SOMANBEZES expr"
+    p[0] = f"{p[1]}{p[3]}MUL\n"
+
+
+# Expressão Aritmética Divisão
+def p_div(p):
+    "exprArit : expr DIBIDE expr"
+    p[0] = f"{p[1]}{p[3]}MUL\n"
+
+
+# Expressão Aritmética Resto da divisão
+def p_rem(p):
+    "exprArit : expr SOBRAS expr"
+    p[0] = f"{p[1]}{p[3]}MOD\n"
+
+
+# Expressão Relativa Não
+def p_not(p):
+    "exprRel : NOUM ABREPC expr FECHAPC"
+    p[0] = f"{p[3]}NOT\n"
+
+
+# Expressão Relativa Igual
+def p_gemeo(p):
+    "exprRel : GEMEO ABREPC expr VIRG expr FECHAPC"
+    p[0] = f"{p[3]}{p[5]}EQUAL\n"
+
+
+# Expressão Relativa Diferente
+def p_naogemeo(p):
+    "exprRel : NAOGEMEO ABREPC expr VIRG expr FECHAPC"
+    p[0] = f"{p[3]}{p[5]}NOT\nEQUAL\n"
+
+
+# Expressão Relativa Menor
+def p_inf(p):
+    "exprRel : MAISPIQUENO ABREPC expr VIRG expr FECHAPC"
+    p[0] = f"{p[3]}{p[5]}INF\n"
+
+
+# Expressão Relativa Menor ou Igual
+def p_infeq(p):
+    "exprRel : MAISPIQUENOOUGEMEO ABREPC expr VIRG expr FECHAPC"
+    p[0] = f"{p[3]}{p[5]}INFEQ\n"
+
+
+# Expressão Relativa Maior
+def p_sup(p):
+    "exprRel : MAISGRANDE ABREPC expr VIRG expr FECHAPC"
+    p[0] = f"{p[3]}{p[5]}SUP\n"
+
+
+# Expressão Relativa Maior ou Igual
+def p_supeq(p):
+    "exprRel : MAISGRANDEOUGEMEO ABREPC expr VIRG expr FECHAPC"
+    p[0] = f"{p[3]}{p[5]}SUPEQ\n"
+
+
+# Expressão Relativa E
+def p_ie(p):
+    "exprRel : expr IE expr"
+    p[0] = f"{p[1]}{p[3]}ADD\nPUSHI 2\nEQUAL\n"
+
+
+# Expressão Relativa OU
+def p_oue(p):
+    "exprRel : expr OUE expr"
+    p[0] = f"{p[1]}{p[3]}ADD\nPUSHI 1\nSUPEQ\n"
+
+
+# Controlo de fluxo (if then)
+def p_if_Then(p):
+    "if : SE ABREPC exprRel FECHAPC ENTAO ABRECHAV Corpo FECHACHAV FIM"
+    p[0] = f"{p[3]}JZ l{parser.labels}\n{p[7]}l{parser.labels}: NOP\n"
+    parser.labels += 1
+
+
+# Controlo de fluxo (if then else)
+def p_if_Then_Else(p):
+    "if : SE ABREPC exprRel FECHAPC ENTAO ABRECHAV Corpo FECHACHAV SENAO ABRECHAV Corpo FECHACHAV FIM"
+    p[0] = f"{p[3]}JZ l{parser.labels}\n{p[7]}JUMP l{parser.labels}f\nl{parser.labels}: NOP\n{p[11]}l{parser.labels}f: NOP\n"
+    parser.labels += 1
+
+
+# Ciclo (while)
+def p_while(p):
+    "while : ENQUANTO ABREPC exprRel FECHAPC FAZ ABRECHAV Corpo FECHACHAV FIM"
+    p[0] = f'l{parser.labels}c: NOP\n{p[3]}JZ l{parser.labels}f\n{p[7]}JUMP l{parser.labels}c\nl{parser.labels}f: NOP\n'
+    parser.labels += 1
+
+
+def p_saidas_STRING(p):
+    "saidas : SAIDAS STRING"
+    p[0] = f'PUSHS {p[2]}\nWRITES\n'
+
+
+def p_saidas_lista(p):
+    "saidas : SAIDAS ID"
+    if len(parser.variaveis[p[2]])==3 :
+        listas = parser.variaveis[p[2]]
+        initLista = listas[0]
+        numeroListas = listas[1]
+        tamanhoListas = listas[2]
+        assm = ""
+        for i in range(numeroListas):
+            for j in range(tamanhoListas):
+                assm+=f"PUSHGP\nPUSHI {initLista}\nPADD\nPUSHI {i}\nPUSHI {tamanhoListas}\nPADD\nPUSHI {j}\nLOADN\nWRITEI\n"
+
+    if len(parser.variaveis[p[2]])==2:
+        listas = parser.variaveis[p[2]]
+        initLista = listas[0]
+        tamanhoListas = listas[1]
+        assm = ""
+        for j in range(tamanhoListas):
+            assm+=f"PUSHGP\nPUSHI {initLista}\nPADD\nPUSHI {j}\nLOADN\nWRITEI\n"
+        p[0]=assm
+
+def p_saidas_expr(p):
+    "saidas : SAIDAS expr"
+    p[0] = f"{p[2]}WRITEI\n"
+
+
+# Funções auxiliares
+
+def p_lista(p):
+    "lista : ABREPR elems FECHAPR"
+    p[0] = p[2]
+
+
+def p_elems(p):
+    "elems : INT"
+    p[0] = [int(p[1])]
+
+
+def p_elems_rec(p):
+    "elems : elems VIRG INT"
+    p[0] = p[1]+[p[3]]
+
+
+# ----------------------------------------
+
+def p_error(p):
+    print(f'Erro na linha {parser.linhaDeCodigo}: {parser.error}')
+    parser.exito = False
+
+# ----------------------------------------
+
+
+parser = yacc.yacc(outputdir="./cache")
+parser.exito = True
+parser.error = ""
+parser.assembly = ""
+parser.variaveis = {}
+parser.stackPointer = 0
+parser.linhaDeCodigo = 0
+parser.labels = 0
+
+assembly = ""
+
+if len(sys.argv)==3:
+    print(f"{sys.argv[0]}, {sys.argv[1]}, {sys.argv[2]}")
+
+if len(sys.argv)==2:
+    print(f"{sys.argv[0]}, {sys.argv[1]}")
+
+if len(sys.argv)==1:
+    line = input(">")
+    while line:
+        parser.exito = True
+        parser.parse(line)
+        if parser.exito:
+            assembly += parser.assembly
+            print(parser.variaveis)
+        else:
+            print("--------------------------------------")
+            print(parser.error)
+            print("--------------------------------------")
+            quit
+        line = input(">")
+
+    saveMachineCode=input("Do you want to save the code that you generated?[y/n]")
+    if saveMachineCode.lower()=="y":
+        path = input("Where do you want to save it?")
+        if path:
+            if ".vm" not in path:
+                file = open(f"{path}.vm", "w")
+                file.write(assembly)
+            else:
+                file = open(f"{path}.vm", "w")
+                file.write(assembly)
+            
+        else:
+            file = open("./a.vm","w")
+            file.write(assembly)
+
+        file.close()
+        print("File saved successfully")
+        
+    else:
+        print("Bye Bye")
+        quit
+
+\end{lstlisting}
+\end{scriptsize}
+
+\textbf{Ficheiro de teste factorial.plo}
+\begin{scriptsize}
+\begin{lstlisting}[language=python]
+saidas "Factorial: "
+var n com entradas
+saidas n
+var res com 1
+
+enquanto (maisGrande(n,0)) faz {
+    alterna res com res * n
+    alterna n com n - 1
+} fim
+
+saidas "\nResultado: "
+saidas res
+\end{lstlisting}
+\end{scriptsize}
+
+
+\textbf{Ficheiro de teste busca\_no\_array.plo}
+\begin{scriptsize}
+\begin{lstlisting}[language=python]
+lista a 10
+lista a com [1,2,3,4,5,6,7,8,9,10]
+
+saidas "Introduza um indice do array:\n"
+var i com entradas
+
+var x com busca a[i]
+
+saidas "Valor: "
+saidas x
+\end{lstlisting}
+\end{scriptsize}
+
+\textbf{Ficheiro de teste\ read\_array.plo}
+\begin{scriptsize}
+\begin{lstlisting}[language=python]
+var n com 5
+var i com 0
+lista a 5
+
+enquanto (maisPiqueno(i,n)) faz {
+    alterna a [i] com entradas
+    alterna i com i + 1
+} fim
+
+saidas "Array gerado:\n"
+saidas a
+\end{lstlisting}
+\end{scriptsize}
+
+
+\textbf{Ficheiro de teste\ produtorio.plo}
+\begin{scriptsize}
+\begin{lstlisting}[language=python]
+saidas "Quantos numeros? "
+var n com entradas
+saidas n
+var res com 1
+var x com 1
+
+enquanto (maisGrande(n,0)) faz {
+    alterna x com entradas
+    alterna res com res * x
+    alterna n com n - 1
+} fim
+
+saidas "\nResultado: "
+saidas res
+\end{lstlisting}
+\end{scriptsize}
+
+\textbf{Ficheiro de teste\ matriz.plo}
+\begin{scriptsize}
+\begin{lstlisting}[language=python]
+matriz m 3 3
+
+alterna m [0] com [1,2,3]
+alterna m [1] com [4,5,6]
+alterna m [2] com [7,8,9]
+
+saidas m
+\end{lstlisting}
+\end{scriptsize}
+
+\textbf{Ficheiro de teste\ swap\_array.plo}
+\begin{scriptsize}
+\begin{lstlisting}[language=python]
+lista a 5
+lista a com [1,2,3,4,5]
+
+saidas "Array inicial:\n"
+saidas a
+
+saidas "\nTroca do indice 1 com indice 3."
+
+swap a [1] com [3]
+
+saidas "Array inicial:\n"
+saidas a
+\end{lstlisting}
+\end{scriptsize}
+
+
+
+\end{document} 
